@@ -1,0 +1,41 @@
+name: Pay4me Flutter CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.6.2'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+        
+      - name: Run widget tests
+        run: flutter test --coverage
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: coverage/
+          
+      - name: Check test results
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            echo "Tests passed successfully!"
+          else
+            echo "Tests failed!"
+            exit 1
+          fi
